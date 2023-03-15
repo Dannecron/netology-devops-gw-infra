@@ -1,0 +1,61 @@
+---
+- name: Initialize terraform configuration
+  hosts: all
+  gather_facts: false
+  tasks:
+    - name: YC - receive user access token
+      ansible.builtin.command:
+        cmd: yc iam create-token
+      register: create_token_result
+    - name: YC - get token from result
+      set_fact:
+        terraform_yandex_cloud_token={{ create_token_result.stdout }}
+    - name: YC - create service account
+      ansible.builtin.command:
+        cmd: yc iam service-account create --name={{ terraform_service_account }} --format=json
+      register: service_account_create_result
+      failed_when:
+        - service_account_create_result.rc != 0
+        - "'AlreadyExists' not in service_account_create_result.stderr"
+    - name: YC - assign role to service account
+      ansible.builtin.command:
+        cmd: >-
+          yc resource-manager folder add-access-binding --name=default --role=editor
+            --subject=serviceAccount:{{ service_account_create_result.stdout|from_json|json_query('id') }}
+      when: service_account_create_result.rc == 0
+
+    - name: YC - receive service account yc access key
+      ansible.builtin.command:
+        cmd: yc iam access-key create --service-account-name={{ terraform_service_account }} --format=json
+      register: service_account_access_key_result
+    - name: YC - get key id and secret from result
+      set_fact:
+        service_account_key_id={{ service_account_access_key_result.stdout|from_json|json_query('access_key.key_id') }}
+        service_account_secret={{ service_account_access_key_result.stdout|from_json|json_query('secret') }}
+    - name: YC - create bucket
+      ansible.builtin.command:
+        cmd: yc storage bucket create --name={{ terraform_yandex_bucket_name }}
+      register: bucket_create_result
+      failed_when:
+        - bucket_create_result.rc != 0
+        - "'AlreadyExists' not in bucket_create_result.stderr"
+    - name: Terraform - Create variables.tf
+      ansible.builtin.template:
+        src: "templates/variables.tf.j2"
+        dest: "terraform/variables.tf"
+    - name: Terraform - init
+      ansible.builtin.command:
+        chdir: ./terraform
+        cmd: >-
+          terraform init
+            -backend-config="bucket={{ terraform_yandex_bucket_name }}"
+            -backend-config="access_key={{ service_account_key_id }}"
+            -backend-config="secret_key={{ service_account_secret }}"
+    - name: Terraform - create workspace
+      ansible.builtin.command:
+        chdir: ./terraform
+        cmd: terraform workspace new prod
+      register: terraform_new_workspace_result
+      failed_when:
+        - terraform_new_workspace_result.rc != 0
+        - "'already exists' not in terraform_new_workspace_result.stderr"
