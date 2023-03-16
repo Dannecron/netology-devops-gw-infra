@@ -41,19 +41,20 @@
         - "'AlreadyExists' not in bucket_create_result.stderr"
     - name: Terraform - Create variables.tf
       ansible.builtin.template:
-        src: "templates/variables.tf.j2"
-        dest: "terraform/variables.tf"
+        src: "{{ playbook_dir }}/templates/terraform/variables.tf.j2"
+        dest: "{{ playbook_dir }}/terraform/variables.tf"
     - name: Terraform - init
       ansible.builtin.command:
-        chdir: ./terraform
+        chdir: "{{ playbook_dir }}/terraform"
         cmd: >-
           terraform init
+            -reconfigure
             -backend-config="bucket={{ terraform_yandex_bucket_name }}"
             -backend-config="access_key={{ service_account_key_id }}"
             -backend-config="secret_key={{ service_account_secret }}"
     - name: Terraform - create workspace
       ansible.builtin.command:
-        chdir: ./terraform
+        chdir: "{{ playbook_dir }}/terraform"
         cmd: terraform workspace new prod
       register: terraform_new_workspace_result
       failed_when:
