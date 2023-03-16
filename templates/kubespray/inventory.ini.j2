@@ -1,0 +1,21 @@
+[all]
+control ansible_host={{ kube_control_node_host }}  # ip=10.3.0.1 etcd_member_name=etcd1
+node1 ansible_host={{ kube_worker_1_node_host }}  # ip=10.3.0.2 etcd_member_name=etcd2
+node2 ansible_host={{ kube_worker_2_node_host }}  # ip=10.3.0.3 etcd_member_name=etcd3
+
+[kube_control_plane]
+control
+
+[etcd]
+control
+
+[kube_node]
+node1
+node2
+
+[calico_rr]
+
+[k8s_cluster:children]
+kube_control_plane
+kube_node
+calico_rr

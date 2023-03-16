@@ -1,0 +1,29 @@
+---
+- name: Initialize kubespray configuration
+  hosts: all
+  gather_facts: false
+  tasks:
+    - name: Terraform - get current state
+      ansible.builtin.command:
+        chdir: "{{ playbook_dir }}/terraform"
+        cmd: terraform show -json
+      register: terraform_current_state
+    - name: Terraform - set node ips from state
+      set_fact:
+        kube_control_node_host={{ terraform_current_state.stdout|from_json|json_query('values.outputs.cluster_ips.value.external[0]') }}
+        kube_worker_1_node_host={{ terraform_current_state.stdout|from_json|json_query('values.outputs.cluster_ips.value.external[1]') }}
+        kube_worker_2_node_host={{ terraform_current_state.stdout|from_json|json_query('values.outputs.cluster_ips.value.external[2]') }}
+
+    - name: Kubespray - initialize inventory
+      ansible.builtin.template:
+        src: "{{ playbook_dir }}/templates/kubespray/inventory.ini.j2"
+        dest: "{{ playbook_dir }}/ansible/kubespray/inventory.ini"
+    - name: Kubespray - get source code
+      ansible.builtin.git:
+        repo: "https://github.com/kubernetes-sigs/kubespray.git"
+        dest: "{{ playbook_dir }}/vendor/kubespray"
+        version: "{{ kubespray_version }}"
+    - name: Kubespray - install requirements
+      ansible.builtin.pip:
+        chdir: "{{ playbook_dir }}/vendor/kubespray"
+        requirements: requirements.txt
