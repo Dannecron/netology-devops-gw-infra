@@ -21,7 +21,7 @@ resource "yandex_compute_instance" "k8s-cluster" {
   }
 
   network_interface {
-    subnet_id = random_shuffle.netology-gw-subnet-random.result
+    subnet_id = random_shuffle.netology-gw-subnet-random.result[0]
     nat       = true
   }
 

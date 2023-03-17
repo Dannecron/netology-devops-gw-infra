@@ -1,0 +1,23 @@
+---
+- name: Get kubectl configuration from control-node
+  hosts: control
+  tasks:
+    - name: Kubectl - get internal k8s config
+      become: yes
+      ansible.builtin.slurp:
+        src: /etc/kubernetes/admin.conf
+      register: k8s_internal_config
+    - name: Kubectl - get certificate values from internal k8s config
+      set_fact:
+        k8s_certificate_auth_data={{ (k8s_internal_config['content']|b64decode|from_yaml).clusters[0].cluster['certificate-authority-data'] }}
+        k8s_user_client_cert_data={{ (k8s_internal_config['content']|b64decode|from_yaml).users[0].user['client-certificate-data'] }}
+        k8s_user_client_key_data={{ (k8s_internal_config['content']|b64decode|from_yaml).users[0].user['client-key-data'] }}
+    - name: Kubectl - create kubectl config from template
+      delegate_to: localhost
+      ansible.builtin.template:
+        src: "{{ playbook_dir }}/templates/kubectl/conf.j2"
+        dest: "~/.kube/config"
+    - name: Kubectl - check connection
+      delegate_to: localhost
+      ansible.builtin.command:
+        cmd: kubectl get pods -A

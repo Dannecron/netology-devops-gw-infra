@@ -1,0 +1,20 @@
+---
+apiVersion: v1
+clusters:
+  - cluster:
+      certificate-authority-data: {{ k8s_certificate_auth_data }}
+      server: https://{{ hostvars['control'].ansible_host }}:6443
+    name: cluster.local
+contexts:
+  - context:
+      cluster: cluster.local
+      user: kubernetes-admin
+    name: kubernetes-admin@cluster.local
+current-context: kubernetes-admin@cluster.local
+kind: Config
+preferences: {}
+users:
+- name: kubernetes-admin
+  user:
+    client-certificate-data: {{ k8s_user_client_cert_data }}
+    client-key-data: {{ k8s_user_client_key_data }}

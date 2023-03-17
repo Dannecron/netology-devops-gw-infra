@@ -4,6 +4,8 @@
 
 ## Использование
 
+Необходимо последовательно выполнить все шаги, описанные ниже. Каждый ansible-playbook описывает один шаг.
+
 ### Инициализация конфигурации terraform
 
 * [ansible playbook `terraform_init.yml`](/terraform_init.yml)
@@ -40,9 +42,6 @@ terraform apply
 ansible-playbook -i ansible/kubespray_init kubespray_init.yml
 ```
 
-__NOTES__:
-* на данном этапе необходимо, чтобы инфрастуктура уже была задеплоена через `terraform`.
-
 ### Запуск kubespray: установка кластера kubernetes
 
 * [ansible playbook `vendor/kubespray/cluster.yml`](/vendor/kubespray/cluster.yml) (будет создан на этапе конфигурации kubespray)
@@ -52,4 +51,15 @@ __NOTES__:
 
 ```shell
 ansible-playbook -i ansible/kubespray/inventory.ini vendor/kubespray/cluster.yml
+```
+
+### Инициализация конфигурации kubectl
+
+* [ansible playbook `kubectl_init.yml`](/kubectl_init.yml)
+* [ansible inventory](/ansible/kubectl_init) (сам файл `inventory` будет создан на этапе конфигурации kubespray)
+
+Запуск:
+
+```shell
+ansible-playbook -i ansible/kubectl_init kubectl_init.yml
 ```

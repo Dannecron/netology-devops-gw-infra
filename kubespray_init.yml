@@ -27,3 +27,7 @@
       ansible.builtin.pip:
         chdir: "{{ playbook_dir }}/vendor/kubespray"
         requirements: requirements.txt
+    - name: Kubectl - initialize inventory
+      ansible.builtin.template:
+        src: "{{ playbook_dir }}/templates/kubectl/inventory.j2"
+        dest: "{{ playbook_dir }}/ansible/kubectl_init/inventory"
