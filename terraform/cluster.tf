@@ -4,7 +4,7 @@ resource "random_shuffle" "netology-gw-subnet-random" {
 }
 
 resource "yandex_compute_instance" "k8s-cluster" {
-  for_each = toset(["control", "node01", "node2"])
+  for_each = toset(["control", "node01", "node02"])
 
   name = each.key
 

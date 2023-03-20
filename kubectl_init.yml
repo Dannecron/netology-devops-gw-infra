@@ -17,6 +17,7 @@
       ansible.builtin.template:
         src: "{{ playbook_dir }}/templates/kubectl/conf.j2"
         dest: "~/.kube/config"
+        mode: 0700
     - name: Kubectl - check connection
       delegate_to: localhost
       ansible.builtin.command:
