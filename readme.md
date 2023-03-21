@@ -63,3 +63,23 @@ ansible-playbook -i ansible/kubespray/inventory.ini vendor/kubespray/cluster.yml
 ```shell
 ansible-playbook -i ansible/kubectl_init kubectl_init.yml
 ```
+
+### Деплой сервисов
+
+* [kube-prometheus-stack](https://artifacthub.io/packages/helm/prometheus-community/kube-prometheus-stack)
+
+    ```shell
+    helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+    helm install monitoring prometheus-community/kube-prometheus-stack -f k8s/helm/kube-prometheus-stack/values.yml
+    ```
+* [приложение](https://github.com/Dannecron/parcel-example-neko)
+
+    ```shell
+    helm install simple-app k8s/helm/simple-app
+    ```
+    или, если чарт уже задеплоен
+    ```shell
+    helm upgrade simple-app k8s/helm/simple-app
+    ```
+* [atlantis](https://www.runatlantis.io)
+  // todo
