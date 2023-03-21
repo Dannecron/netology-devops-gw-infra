@@ -1,0 +1,30 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: {{ .Chart.Name }}-{{ .Values.environment }}
+    service: application
+  name: {{ .Chart.Name }}-{{ .Values.environment }}-application
+spec:
+  replicas: {{ .Values.application.replicasCount }}
+  selector:
+    matchLabels:
+      app: {{ .Chart.Name }}-{{ .Values.environment }}
+      service: application
+  template:
+    metadata:
+      labels:
+        app: {{ .Chart.Name }}-{{ .Values.environment }}
+        service: application
+    spec:
+      containers:
+        - image: {{ .Values.image.name }}:{{ .Chart.AppVersion }}
+          imagePullPolicy: Always
+          name: application
+          ports:
+            - name: web
+              containerPort: 80
+          resources:
+            {{- toYaml .Values.application.resources | nindent 12 }}
+      terminationGracePeriodSeconds: 30
