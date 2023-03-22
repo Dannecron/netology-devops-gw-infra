@@ -1,0 +1,22 @@
+environment: production
+
+image:
+  name: ghcr.io/runatlantis/atlantis
+
+atlantis:
+  config:
+    orgAllowlist: github.com/Dannecron/*
+    github:
+      user: Dannecron
+      token: personal-access-token
+      secret: token-secret
+    allowCommands: "version,plan,state"
+
+  replicasCount: 1
+  resources:
+    requests:
+      memory: 512Mi
+      cpu: 100m
+    limits:
+      memory: 1Gi
+      cpu: 100m

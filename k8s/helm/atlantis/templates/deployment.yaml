@@ -1,0 +1,56 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: {{ .Chart.Name }}-{{ .Values.environment }}
+    service: atlantis
+  name: {{ .Chart.Name }}-{{ .Values.environment }}
+spec:
+  replicas: {{ .Values.atlantis.replicasCount }}
+  selector:
+    matchLabels:
+      app: {{ .Chart.Name }}-{{ .Values.environment }}
+      service: atlantis
+  template:
+    metadata:
+      labels:
+        app: {{ .Chart.Name }}-{{ .Values.environment }}
+        service: atlantis
+    spec:
+      containers:
+        - image: {{ .Values.image.name }}:{{ .Chart.AppVersion }}
+          imagePullPolicy: Always
+          name: atlantis
+          ports:
+            - name: web
+              containerPort: 4141
+          env:
+            - name: ATLANTIS_GH_USER
+              value: {{ .Values.atlantis.config.github.user }}
+            - name: ATLANTIS_GH_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Chart.Name }}-{{ .Values.environment }}
+                  key: github_token
+            - name: ATLANTIS_GH_WEBHOOK_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Chart.Name }}-{{ .Values.environment }}
+                  key: github_secret
+            - name: ATLANTIS_REPO_ALLOWLIST
+              value: {{ toYaml (.Values.atlantis.config.orgAllowlist) }}
+            - name: ATLANTIS_ALLOW_COMMANDS
+              value: {{ .Values.atlantis.config.allowCommands }}
+          resources:
+            {{- toYaml .Values.atlantis.resources | nindent 12 }}
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 4141
+            initialDelaySeconds: 5
+            periodSeconds: 60
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 5
+      terminationGracePeriodSeconds: 30
