@@ -7,9 +7,9 @@ atlantis:
   config:
     orgAllowlist: github.com/Dannecron/*
     github:
-      user: Dannecron
-      token: personal-access-token
-      secret: token-secret
+      user: personal-access-token-name
+      token: personal-access-token-secret
+      secret: webhook-secret
     allowCommands: "version,plan,state"
 
   replicasCount: 1
