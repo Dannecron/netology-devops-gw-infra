@@ -1,6 +1,6 @@
 ---------------------------------------------------------
 
-Content of NOTES.txt appears after deploy.
-Deployed version {{ .Chart.AppVersion }}.
+Test application.
+Deployed version {{ .Values.image.tag | default .Chart.AppVersion }}.
 
 ---------------------------------------------------------

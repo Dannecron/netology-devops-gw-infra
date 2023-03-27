@@ -84,7 +84,7 @@ ansible-playbook -i ansible/kubectl_init kubectl_init.yml
 * [atlantis](https://www.runatlantis.io)
 
     ```shell
-    helm upgrade --set "atlantis.config.github.user=<access_token>" --set "atlantis.config.github.token=<token_secret>" --set "atlantis.config.github.secret=<webhook_secret>" atlantis k8s/helm/atlantis
+    helm install --set "atlantis.config.github.user=<access_token>" --set "atlantis.config.github.token=<token_secret>" --set "atlantis.config.github.secret=<webhook_secret>" atlantis k8s/helm/atlantis
     ```
   
     где `<access_token>`, `<token_secret>` - это данные персонального access-токена, созданного на github,

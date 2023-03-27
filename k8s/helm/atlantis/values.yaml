@@ -3,20 +3,20 @@ environment: production
 image:
   name: ghcr.io/runatlantis/atlantis
 
-atlantis:
-  config:
-    orgAllowlist: github.com/Dannecron/*
-    github:
-      user: personal-access-token-name
-      token: personal-access-token-secret
-      secret: webhook-secret
-    allowCommands: "version,plan,state"
+replicasCount: 1
 
-  replicasCount: 1
-  resources:
-    requests:
-      memory: 512Mi
-      cpu: 100m
-    limits:
-      memory: 1Gi
-      cpu: 100m
+resources:
+  requests:
+    memory: 512Mi
+    cpu: 100m
+  limits:
+    memory: 1Gi
+    cpu: 100m
+
+config:
+  orgAllowlist: github.com/Dannecron/*
+  github:
+    user: personal-access-token-name
+    token: personal-access-token-secret
+    secret: webhook-secret
+  allowCommands: "version,plan,state"

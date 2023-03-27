@@ -7,7 +7,7 @@ metadata:
     service: atlantis
   name: {{ .Chart.Name }}-{{ .Values.environment }}
 spec:
-  replicas: {{ .Values.atlantis.replicasCount }}
+  replicas: {{ .Values.replicasCount }}
   selector:
     matchLabels:
       app: {{ .Chart.Name }}-{{ .Values.environment }}
@@ -27,7 +27,7 @@ spec:
               containerPort: 4141
           env:
             - name: ATLANTIS_GH_USER
-              value: {{ .Values.atlantis.config.github.user }}
+              value: {{ .Values.config.github.user }}
             - name: ATLANTIS_GH_TOKEN
               valueFrom:
                 secretKeyRef:
@@ -39,11 +39,11 @@ spec:
                   name: {{ .Chart.Name }}-{{ .Values.environment }}
                   key: github_secret
             - name: ATLANTIS_REPO_ALLOWLIST
-              value: {{ toYaml (.Values.atlantis.config.orgAllowlist) }}
+              value: {{ toYaml (.Values.config.orgAllowlist) }}
             - name: ATLANTIS_ALLOW_COMMANDS
-              value: {{ .Values.atlantis.config.allowCommands }}
+              value: {{ .Values.config.allowCommands }}
           resources:
-            {{- toYaml .Values.atlantis.resources | nindent 12 }}
+            {{- toYaml .Values.resources | nindent 12 }}
           livenessProbe:
             httpGet:
               path: /healthz

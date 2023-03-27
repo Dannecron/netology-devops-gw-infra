@@ -2,13 +2,13 @@ environment: production
 
 image:
   name: dannecron/parcel-example-neko
+  tag:
 
-application:
-  replicasCount: 1
-  resources:
-    limits:
-      cpu: 200m
-      memory: 256Mi
-    requests:
-      cpu: 100m
-      memory: 128Mi
+replicasCount: 1
+resources:
+  limits:
+    cpu: 200m
+    memory: 256Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
