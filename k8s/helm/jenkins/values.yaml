@@ -1,0 +1,13 @@
+environment: production
+
+image:
+  name: jenkins/jenkins
+  tag:
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 2Gi
+  requests:
+    cpu: 500m
+    memory: 500Mi

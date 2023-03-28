@@ -89,3 +89,9 @@ ansible-playbook -i ansible/kubectl_init kubectl_init.yml
   
     где `<access_token>`, `<token_secret>` - это данные персонального access-токена, созданного на github,
     а `<webhook_secret>` - строка, которая должна совпадать в конфигурации webhook и atlantis.
+
+* [jenkins](https://www.jenkins.io/)
+
+    ```shell
+    helm isntall jenkins k8s/helm/jenkins
+    ```

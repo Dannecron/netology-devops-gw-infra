@@ -1,0 +1,50 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: {{ .Chart.Name }}-{{ .Values.environment }}-main
+    service: jenkins
+  name: {{ .Chart.Name }}-{{ .Values.environment }}-main
+  namespace: devops-tools
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Chart.Name }}-{{ .Values.environment }}-main
+      service: jenkins
+  template:
+    metadata:
+      labels:
+        app: {{ .Chart.Name }}-{{ .Values.environment }}-main
+        service: jenkins
+    spec:
+      serviceAccountName: jenkins-admin
+      initContainers:
+        - name: volume-mount-hack
+          image: busybox:latest
+          command: [ "sh", "-c", "chown -R 1000:1000 /var/jenkins_home" ]
+          volumeMounts:
+            - name: jenkins-data
+              mountPath: /var/jenkins_home
+      containers:
+        - image: {{ .Values.image.name }}:{{ .Values.image.tag | default .Chart.AppVersion }}
+          imagePullPolicy: Always
+          name: jenkins-main
+          ports:
+            - name: web
+              containerPort: 8080
+            - name: jnlp
+              containerPort: 50000
+          env:
+            - name: JENKINS_OPTS
+              value: "--prefix=/jenkins"
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - name: jenkins-data
+              mountPath: /var/jenkins_home
+      volumes:
+        - name: jenkins-data
+          persistentVolumeClaim:
+            claimName: jenkins-pv-claim

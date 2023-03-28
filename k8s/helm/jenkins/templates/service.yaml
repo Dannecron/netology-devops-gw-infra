@@ -1,0 +1,28 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Chart.Name }}-{{ .Values.environment }}-main
+  namespace: devops-tools
+spec:
+  ports:
+    - name: web
+      port: 8080
+  selector:
+    app: {{ .Chart.Name }}-{{ .Values.environment }}-main
+    service: jenkins
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Chart.Name }}-{{ .Values.environment }}-main-np
+  namespace: devops-tools
+spec:
+  type: NodePort
+  ports:
+    - name: jnlp
+      port: 30000
+      nodePort: 30000
+  selector:
+    app: {{ .Chart.Name }}-{{ .Values.environment }}-main
+    service: jenkins
