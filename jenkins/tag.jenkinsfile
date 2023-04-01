@@ -1,0 +1,91 @@
+repository="dannecron/parcel-example-neko"
+
+podTemplate(
+	label: 'app-image-builder',
+	cloud: 'kubernetes',
+	serviceAccount: 'jenkins-admin',
+	namespace: "ci-cd",
+	containers: [
+		containerTemplate(
+			name: 'builder',
+			image: 'moby/buildkit:v0.11.5',
+			ttyEnabled: true,
+			privileged: true
+		),
+		containerTemplate(
+			name: 'deployer',
+			image: 'alpine/k8s:1.26.3',
+			ttyEnabled: true,
+			privileged: true,
+			command: 'cat'
+		)
+	],
+	volumes: [
+		secretVolume(secretName: 'docker-config', mountPath: '/root/.docker')
+	]
+) {
+	node('app-image-builder') {
+		properties([
+			pipelineTriggers([
+				[
+					$class: 'GenericTrigger',
+					genericVariables: [
+						[key: 'ref', value: '$.ref'],
+						[key: 'refType', value: '$.ref_type']
+					],
+					printContributedVariables: true,
+    				printPostContent: true,
+    				regexpFilterText: '$refType',
+    				regexpFilterExpression: '^tag$',
+					token: 'tag'
+				]
+			])
+		])
+
+		stage('build') {
+			def tagName = "$ref"
+			def image="${repository}:${tagName}"
+
+			dir('app') {
+				echo "checkout tag ${tagName}"
+//				checkout scm: [
+//					$class: 'GitSCM',
+//					userRemoteConfigs: [[
+//						url: 'git@github.com:Dannecron/parcel-example-neko.git',
+//						credentialsId: 'github-key'
+//					]],
+//					branches: [[name: "refs/tags/${tagName}"]]],
+//					poll: false
+			}
+//
+//			container('builder') {
+//				dir ('app') {
+//					echo "start building image ${image}"
+//					sh """
+//					buildctl build --frontend dockerfile.v0 --local context=. --local dockerfile=. --output type=image,name=${image},push=true
+//					"""
+//				}
+//			}
+		}
+
+		stage('deploy') {
+			def tagName = "$ref"
+
+			dir('infra') {
+				echo 'checkout infra repo'
+				git credentialsId: 'github-key',
+				    url: 'git@github.com:Dannecron/netology-devops-gw-infra.git',
+					branch: 'main'
+			}
+
+			container('deployer') {
+				dir('infra') {
+					echo "start deploy with version ${tagName}"
+					sh """
+					helm --namespace=default upgrade --set 'image.tag=${tagName}' simple-app k8s/helm/simple-app
+					"""
+				}
+			}
+		}
+	}
+}

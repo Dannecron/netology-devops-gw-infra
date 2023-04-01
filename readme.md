@@ -66,32 +66,49 @@ ansible-playbook -i ansible/kubectl_init kubectl_init.yml
 
 ### Деплой сервисов
 
-* [kube-prometheus-stack](https://artifacthub.io/packages/helm/prometheus-community/kube-prometheus-stack)
+#### Приложение
 
-    ```shell
-    helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
-    helm install monitoring prometheus-community/kube-prometheus-stack -f k8s/helm/kube-prometheus-stack/values.yml
-    ```
-* [приложение](https://github.com/Dannecron/parcel-example-neko)
+[репозиторий](https://github.com/Dannecron/parcel-example-neko)
 
-    ```shell
-    helm install simple-app k8s/helm/simple-app
-    ```
-    или, если чарт уже задеплоен
-    ```shell
-    helm upgrade simple-app k8s/helm/simple-app
-    ```
-* [atlantis](https://www.runatlantis.io)
+```shell
+helm upgrade -i simple-app k8s/helm/simple-app
+```
 
-    ```shell
-    helm install --set "atlantis.config.github.user=<access_token>" --set "atlantis.config.github.token=<token_secret>" --set "atlantis.config.github.secret=<webhook_secret>" atlantis k8s/helm/atlantis
-    ```
-  
-    где `<access_token>`, `<token_secret>` - это данные персонального access-токена, созданного на github,
-    а `<webhook_secret>` - строка, которая должна совпадать в конфигурации webhook и atlantis.
+#### kube-prometheus-stack
 
-* [jenkins](https://www.jenkins.io/)
+[helm-чарт](https://artifacthub.io/packages/helm/prometheus-community/kube-prometheus-stack)
 
-    ```shell
-    helm isntall jenkins k8s/helm/jenkins
-    ```
+```shell
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm upgrade -i monitoring prometheus-community/kube-prometheus-stack -f k8s/helm/kube-prometheus-stack/values.yml
+```
+
+#### Atlantis
+
+[документация](https://www.runatlantis.io)
+
+```shell
+helm upgrade -i --set "config.github.user=<access_token>" --set "config.github.token=<token_secret>" --set "config.github.secret=<webhook_secret>" atlantis k8s/helm/atlantis
+```
+
+где `<access_token>`, `<token_secret>` - это данные персонального access-токена, созданного на github,
+а `<webhook_secret>` - строка, которая должна совпадать в конфигурации webhook и atlantis.
+
+#### Jenkins
+
+[документация](https://www.jenkins.io/)
+
+```shell
+helm upgrade -i --set "docker.dockerHubUser=<dockerHubUser>" --set "docker.dockerHubPassword=<dockerHubPassword>" jenkins k8s/helm/jenkins
+```
+
+Необходимые плагины:
+* [kubernetes](https://plugins.jenkins.io/kubernetes/)
+* [generic webhook trigger](https://plugins.jenkins.io/generic-webhook-trigger/)
+
+Необходимая конфигурация:
+* Автоматически прописывать `known_hosts`
+* Добавить секрет с названием `github-key` с именем пользователя и ssh-ключом к github
+* Настроить облачную конфигурацию воркеров для kubernetes и убрать запуск воркеров на master-ноде
+* Создать новый pipeline-проект для обработки push-эвентов по всем git-веткам со скриптом [jenkins/ref.jenkinsfile](./jenkins/ref.jenkinsfile).
+* Создать новый pipeline-проект для обработки создания git-тэгов со скриптом [jenkins/tag.jenkinsfile](./jenkins/tag.jenkinsfile).

@@ -1,0 +1,62 @@
+repository="dannecron/parcel-example-neko"
+
+podTemplate(
+	label: 'app-image-builder',
+	cloud: 'kubernetes',
+	serviceAccount: 'jenkins-admin',
+	namespace: "ci-cd",
+	containers: [
+		containerTemplate(
+			name: 'builder',
+			image: 'moby/buildkit:v0.11.5',
+			ttyEnabled: true,
+			privileged: true
+		)
+	],
+	volumes: [
+		secretVolume(secretName: 'docker-config', mountPath: '/root/.docker')
+	]
+) {
+	node('app-image-builder') {
+		properties([
+			pipelineTriggers([
+				[
+					$class: 'GenericTrigger',
+					genericVariables: [
+						[key: 'ref', value: '$.ref'],
+						[key: 'commit', value: '$.after']
+					],
+					printContributedVariables: true,
+    				printPostContent: true,
+    				regexpFilterText: '$ref',
+    				regexpFilterExpression: '^refs/heads/.+$',
+					token: 'push'
+				]
+			])
+		])
+
+		stage('build') {
+			def branchName = (ref =~ /^refs\/heads\/(.+)$/)[0][1]
+
+			echo "checkout branch ${branchName}"
+			git credentialsId: 'github-key',
+				url: 'git@github.com:Dannecron/parcel-example-neko.git',
+				branch: branchName
+
+			container('builder') {
+				def tag = 'latest'
+
+				if (branchName != 'main') {
+					tag = "${branchName}"
+				}
+
+				def image="${repository}:${tag}"
+
+				echo "start building image ${image}"
+				sh """
+				buildctl build --frontend dockerfile.v0 --local context=. --local dockerfile=. --output type=image,name=${image},push=true
+				"""
+			}
+		}
+	}
+}
