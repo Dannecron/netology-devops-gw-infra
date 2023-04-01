@@ -10,13 +10,14 @@ resource "yandex_compute_instance" "k8s-cluster" {
 
   resources {
     cores  = 2
-    memory = 2
+    memory = 4
   }
 
   boot_disk {
     initialize_params {
       image_id = "fd8kdq6d0p8sij7h5qe3" # ubuntu-20-04-lts-v20220822
-      size = "20"
+      size = "40"
+      type = "network-ssd"
     }
   }
 
