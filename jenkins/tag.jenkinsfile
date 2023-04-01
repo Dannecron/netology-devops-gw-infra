@@ -48,24 +48,24 @@ podTemplate(
 
 			dir('app') {
 				echo "checkout tag ${tagName}"
-//				checkout scm: [
-//					$class: 'GitSCM',
-//					userRemoteConfigs: [[
-//						url: 'git@github.com:Dannecron/parcel-example-neko.git',
-//						credentialsId: 'github-key'
-//					]],
-//					branches: [[name: "refs/tags/${tagName}"]]],
-//					poll: false
+				checkout scm: [
+					$class: 'GitSCM',
+					userRemoteConfigs: [[
+						url: 'git@github.com:Dannecron/parcel-example-neko.git',
+						credentialsId: 'github-key'
+					]],
+					branches: [[name: "refs/tags/${tagName}"]]],
+					poll: false
 			}
-//
-//			container('builder') {
-//				dir ('app') {
-//					echo "start building image ${image}"
-//					sh """
-//					buildctl build --frontend dockerfile.v0 --local context=. --local dockerfile=. --output type=image,name=${image},push=true
-//					"""
-//				}
-//			}
+
+			container('builder') {
+				dir ('app') {
+					echo "start building image ${image}"
+					sh """
+					buildctl build --frontend dockerfile.v0 --local context=. --local dockerfile=. --output type=image,name=${image},push=true
+					"""
+				}
+			}
 		}
 
 		stage('deploy') {
