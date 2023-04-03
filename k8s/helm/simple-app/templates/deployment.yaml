@@ -25,6 +25,9 @@ spec:
           ports:
             - name: web
               containerPort: 80
+          env:
+            - name: APP_VERSION
+              value: {{ .Values.image.tag | default .Chart.AppVersion }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       terminationGracePeriodSeconds: 30
