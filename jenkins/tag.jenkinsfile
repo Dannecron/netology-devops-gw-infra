@@ -82,7 +82,7 @@ podTemplate(
 				dir('infra') {
 					echo "start deploy with version ${tagName}"
 					sh """
-					helm --namespace=default upgrade --set 'image.tag=${tagName}' simple-app k8s/helm/simple-app
+					helm --namespace=default upgrade --install --set 'image.tag=${tagName}' simple-app k8s/helm/simple-app
 					"""
 				}
 			}
